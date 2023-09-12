@@ -4,14 +4,6 @@ This is a text-based game where you can grow and manage virtual plants in a gard
 '''
 
 import random
-from datetime import datetime
-
-# Creating a logging decorator
-def log(func):
-    def wrapper(*args, **kwargs):
-        print(f"{datetime.now()}: {func.__name__} was called with arguments {args} and keyword arguments {kwargs}")
-        return func(*args, **kwargs)
-    return wrapper
 
 # Defining classes
 class Plant:
@@ -20,15 +12,13 @@ class Plant:
     A plant is a living thing that can be grown in a garden. A plant has a name, a number of days to mature, a maximum harvest yield, a list of growth stages, a current growth stage, a harvestable status, and a harvest yield.
     """
 
-    def __init__(self, name, max_harvest_yield):
+    def __init__(self, name, harvest_yield):
         self.name = name
-        self.max_harvest_yield = max_harvest_yield
+        self.harvest_yield = harvest_yield
         self.growth_stages = ["seed", "sprout", "mature", "blooming", "fruiting", "harvest-ready"]
         self.current_growth_stage = self.growth_stages[0]
         self.harvestable = False
-        self._harvest_yield = random.randint(1, self.max_harvest_yield)
     
-    @log
     def grow(self):
         """
         Grow the plant. Increments current_growth_stage by 1 and sets harvestable to True if current_growth_stage is "harvest-ready".
@@ -38,7 +28,6 @@ class Plant:
             self.harvestable = True
             print(f"Your {self.name} is ready to harvest!")
 
-    @log
     def harvest(self):
         """
         Harvest the plant. Sets harvestable to False, sets current_growth_stage to "seed", and sets current_age to 0.
@@ -98,7 +87,6 @@ class Gardener:
         self.inventory = {}
         self.planted_plants = []
 
-    @log
     def get_inventory(self):
         """
         Get gardener's inventory. Returns a dictionary of gardener's inventory.
@@ -111,7 +99,6 @@ class Gardener:
             except:
                 print(f"{item}: {self.inventory[item]}")
     
-    @log
     def plant(self):
         """
         Plant a plant. Returns True if successful updates gardener's inventory, False if not.
@@ -130,8 +117,6 @@ class Gardener:
         else:
             print(f"No {plant_name}s available in the inventory to plant.")
 
-
-    @log
     def tend(self):
         """
         Tend to plants. Returns True if successful, False if not.
@@ -147,8 +132,7 @@ class Gardener:
         else:
             print("You don't have any plants to tend to!")
             return False
-
-    @log  
+ 
     def harvest(self):
         """
         Harvest a plant. Updates gardener's inventory, removes plant from planted plants, and returns True if successful, False if not.
@@ -156,17 +140,16 @@ class Gardener:
         plant = select_item(player.planted_plants)
         if plant.harvest():
             if plant.name in self.inventory:
-               self.inventory[plant.name] += plant._harvest_yield
+               self.inventory[plant.name] += plant.harvest_yield
             else:
-                self.inventory[plant.name] = plant._harvest_yield
-            print(f"You harvested {plant._harvest_yield} {plant.name}(s)!")
+                self.inventory[plant.name] = plant.harvest_yield
+            print(f"You harvested {plant.harvest_yield} {plant.name}(s)!")
             self.planted_plants.remove(plant)
             return True
         else:
             print("You don't have any harvestable plants!")
             return False
     
-    @log
     def forage_for_seeds(self):
         """
         Forage for seeds. Takes a list of plants and adds a random plant to the gardener's inventory.
@@ -188,29 +171,37 @@ class Gardener:
 
 def select_item(inventory):
     """
-    Select an item from a list. Takes a dictionary of items. Returns the item the player selects.
+    Select an item from a list or dictionary. 
+    Takes a dictionary or list of items. Returns the item the player selects.
     """
-    # Display the items for the user to select.
+    
+    # Display items for the user to select
     if type(inventory) == dict:
-        for item in inventory:
-            print(f"{list(inventory.keys()).index(item) + 1}. {item}")
-
-        item_number = input("Select an item by a position number: ")
-        try:
-            item_number = int(item_number)
-            return list(inventory.keys())[item_number - 1]
-        except:
-            print("Invalid selection. Please enter a number from the list.")
+        items = list(inventory.keys())
+        for i in range(len(items)):
+            print(f"{i + 1}. {items[i]}")
     elif type(inventory) == list:
-        for item in inventory:
-            print(f"{inventory.index(item) + 1}. {item.name}")
+        for i in range(len(inventory)):
+            print(f"{i + 1}. {inventory[i].name}")
+    else:
+        print("Unsupported inventory type.")
+        return None
 
-        item_number = input("Select an item by a position number: ")
+    while True:
+        item_number = input("Select an item by its position number: ")
         try:
             item_number = int(item_number)
-            return inventory[item_number - 1]
-        except:
-            print("Invalid selection. Please enter a number from the list.")
+            
+            # Check if the selected number is within the valid range
+            if 1 <= item_number <= len(inventory):
+                if type(inventory) == dict:
+                    return items[item_number - 1]
+                else:
+                    return inventory[item_number - 1]
+            else:
+                print("Invalid selection. Please enter a number from the list.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
 
 plant_list = ["tomato", "carrot", "sunflower", "radish"
               ]
