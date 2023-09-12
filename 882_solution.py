@@ -91,6 +91,8 @@ class Gardener:
     A gardener is a person who tends to a garden. A gardener has a name and an inventory of seeds and harvested plants.
     """
 
+    plant_dict = {"tomato": Tomato, "carrot": Carrot, "sunflower": Sunflower, "radish": Radish}
+
     def __init__(self, name):
         self.name = name
         self.inventory = {}
@@ -114,15 +116,20 @@ class Gardener:
         """
         Plant a plant. Returns True if successful updates gardener's inventory, False if not.
         """
-        plant = select_item(player.inventory)
-        if plant in self.inventory and self.inventory[plant] > 0:
-            self.inventory[plant] -= 1
-            self.planted_plants.append(plant)
-            print(f"You planted a {plant.name}.")
-            return True
+        plant_name = select_item(self.inventory)
+        if plant_name in self.inventory and self.inventory[plant_name] > 0:
+            self.inventory[plant_name] -= 1
+            if self.inventory[plant_name] == 0:
+                del self.inventory[plant_name]
+            
+            # Use the dictionary to create an instance of the desired plant
+            new_plant = self.plant_dict[plant_name]()
+            self.planted_plants.append(new_plant)
+            
+            print(f"Planted a {plant_name}.")
         else:
-            print("You don't have any of that plant!")
-            return False
+            print(f"No {plant_name}s available in the inventory to plant.")
+
 
     @log
     def tend(self):
@@ -146,9 +153,12 @@ class Gardener:
         """
         Harvest a plant. Updates gardener's inventory, removes plant from planted plants, and returns True if successful, False if not.
         """
-        plant = select_item(player.inventory)
+        plant = select_item(player.planted_plants)
         if plant.harvest():
-            self.inventory[plant] += plant._harvest_yield
+            if plant.name in self.inventory:
+               self.inventory[plant.name] += plant._harvest_yield
+            else:
+                self.inventory[plant.name] = plant._harvest_yield
             print(f"You harvested {plant._harvest_yield} {plant.name}(s)!")
             self.planted_plants.remove(plant)
             return True
@@ -167,7 +177,7 @@ class Gardener:
             self.inventory[plant] += 1
         else:
             self.inventory[plant] = 1
-        print(f"You found a {plant.name} seed!")
+        print(f"You found a {plant} seed!")
 
     def current_plants(self):
         """
@@ -181,23 +191,29 @@ def select_item(inventory):
     Select an item from a list. Takes a dictionary of items. Returns the item the player selects.
     """
     # Display the items for the user to select.
-    for item in inventory:
-        print(f"{list(inventory.keys()).index(item) + 1}. {item.name}")
+    if type(inventory) == dict:
+        for item in inventory:
+            print(f"{list(inventory.keys()).index(item) + 1}. {item}")
 
-    item_number = input("Select an item by a position number: ")
-    try:
-        item_number = int(item_number)
-        return list(inventory.keys())[item_number - 1]
-    except:
-        print("Invalid selection. Please enter a number from the list.")
+        item_number = input("Select an item by a position number: ")
+        try:
+            item_number = int(item_number)
+            return list(inventory.keys())[item_number - 1]
+        except:
+            print("Invalid selection. Please enter a number from the list.")
+    elif type(inventory) == list:
+        for item in inventory:
+            print(f"{inventory.index(item) + 1}. {item.name}")
 
-# List of plants
-tomato = Tomato()
-carrot = Carrot()
-sunflower = Sunflower()
-radish = Radish()
-plant_list = [tomato, carrot, sunflower, radish]
+        item_number = input("Select an item by a position number: ")
+        try:
+            item_number = int(item_number)
+            return inventory[item_number - 1]
+        except:
+            print("Invalid selection. Please enter a number from the list.")
 
+plant_list = ["tomato", "carrot", "sunflower", "radish"
+              ]
 ## Begin game logic ##
 # Get player name
 player_name = input("What is your name? ")
