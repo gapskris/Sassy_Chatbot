@@ -86,18 +86,6 @@ class Gardener:
         self.name = name
         self.inventory = {}
         self.planted_plants = []
-
-    def get_inventory(self):
-        """
-        Get gardener's inventory. Returns a dictionary of gardener's inventory.
-        """
-        print("****Inventory****")
-        for item in self.inventory:
-            try:
-                name = item.name
-                print(f"{name}: {self.inventory[item]}")
-            except:
-                print(f"{item}: {self.inventory[item]}")
     
     def plant(self):
         """
@@ -162,13 +150,6 @@ class Gardener:
             self.inventory[plant] = 1
         print(f"You found a {plant} seed!")
 
-    def current_plants(self):
-        """
-        Get gardener's current plants. Returns a list of gardener's current plants.
-        """
-        for plant in self.planted_plants:
-            print(f"{plant.name} is currently {plant.current_growth_stage}.")
-
 def select_item(inventory):
     """
     Select an item from a list or dictionary. 
@@ -211,7 +192,7 @@ player_name = input("What is your name? ")
 player = Gardener(player_name)
 
 # list actions player can take
-actions = ["plant", "tend", "harvest", "forage", "inventory", "help", "planted", "quit"]
+actions = ["plant", "tend", "harvest", "forage", "help", "quit"]
 
 print(f"Welcome to the garden, {player.name}!")
 print("Type 'help' for a list of actions you can take.")
@@ -228,14 +209,10 @@ while True:
             player.harvest()
         elif action == "forage":
             player.forage_for_seeds()
-        elif action == "inventory":
-            print(player.get_inventory())
         elif action == "help":
             print("****Actions****")
             for action in actions:
                 print(action)
-        elif action == "planted":
-            player.current_plants()
         elif action == "quit" or action == "exit":
             break
     else:
