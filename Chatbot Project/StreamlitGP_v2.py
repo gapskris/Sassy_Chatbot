@@ -2,11 +2,12 @@
 from openai import OpenAI
 import streamlit as st
 
-client = OpenAI()
-
 st.title("Sassy Chatbot:face_with_rolling_eyes:")
 
 st.sidebar.header("Options")
+openai_api_key = st.sidebar.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
+st.sidebar.write("[Get an OpenAI API key](https://platform.openai.com/account/api-keys)")
+
 max_tokens = st.sidebar.slider("Max Tokens", 1, 250, 100)
 temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.7)
 model = st.sidebar.selectbox("Model", ("gpt-3.5-turbo","Other"))
@@ -25,11 +26,8 @@ elif system_message_type == "Custom":
 else:
     system_message = "You are a helpful assistant."
 
-if st.sidebar.button("Apply Settings"):
-    st.session_state.messages = []
-    st.session_state["messages"] = [{"role": "system", "content": system_message}]
-    st.rerun()
-st.sidebar.write("Warning: Applying new settings will clear the chat history.")
+if st.sidebar.button("Apply New System Message"):
+    st.session_state.messages[0] = {"role": "system", "content": system_message}
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "system", "content": system_message}]
@@ -39,6 +37,10 @@ for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
 if prompt := st.chat_input():
+    if not openai_api_key:
+        st.info("Please add your OpenAI API key to continue.")
+        st.stop()
+    client = OpenAI(api_key=openai_api_key)
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
     response = client.chat.completions.create(
@@ -51,4 +53,5 @@ if prompt := st.chat_input():
     st.chat_message("assistant").write(msg)
     if len(st.session_state.messages) > 20:
         st.session_state.messages = st.session_state.messages[-20:]
+        st.session_state["messages"] = [{"role": "system", "content": system_message}]
 
