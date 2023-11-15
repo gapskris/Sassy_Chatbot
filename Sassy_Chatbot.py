@@ -7,10 +7,11 @@ st.title("Sassy Chatbot:face_with_rolling_eyes:")
 st.sidebar.header("Options")
 openai_api_key = st.sidebar.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
 st.sidebar.write("[Get an OpenAI API key](https://platform.openai.com/account/api-keys)")
+st.sidebar.write("[See this app's source code on GitHub](https://github.com/acstrahl/Sassy_Chatbot)")
 
 max_tokens = st.sidebar.slider("Max Tokens", 1, 250, 100)
 temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.7)
-model = st.sidebar.selectbox("Model", ("gpt-3.5-turbo","Other"))
+model = st.sidebar.selectbox("Model", ("gpt-3.5-turbo","gpt-4"))
 system_message_type = st.sidebar.selectbox("System Message",("Sassy Assistant", "Bored Assistant", "Angry Assistant", "Custom"))
 
 
